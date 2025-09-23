@@ -15,7 +15,7 @@ This is the frontend codebase built with Next.js, React Native Web, and Monaco E
 
 ```bash
 git clone "https://github.com/notAryan10/react-native-playground-frontend"
-cd frontend
+cd react-native-playground-frontend
 
 ```
 

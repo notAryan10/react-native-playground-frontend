@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { SettingsPanel, Settings } from './SettingsPanel';
+const MonacoPlayground = dynamic(() => import('./MonacoPlayground'), { ssr: false });
 import { ArrowLeft, Clock, Download, Settings as SettingsIcon, HelpCircle, FileText } from 'lucide-react';
 
 export default function PlaygroundLayout() {
@@ -18,7 +20,41 @@ export default function PlaygroundLayout() {
     showConsoleErrors: true
   });
 
-  const [code, setCode] = useState('// Your code here...');
+  const [code, setCode] = useState(`import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Hello React Native Web!</Text>
+      <Text style={styles.subtitle}>
+        Edit this code and see it render in the preview.
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+});
+`);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Auto-save functionality
@@ -243,36 +279,14 @@ export default function PlaygroundLayout() {
                 </div>
               </div>
 
-              {/* Editor Content */}
-              <div className="flex-1 overflow-auto relative">
-                <textarea
+              {/* Editor Content (Monaco) */}
+              <div className="flex-1 overflow-hidden">
+                <MonacoPlayground
                   value={code}
-                  onChange={(e) => handleCodeChange(e.target.value)}
-                  className="w-full h-full px-8 py-4 font-mono outline-none resize-none"
-                  style={{
-                    backgroundColor: themeColors.bg,
-                    color: themeColors.text,
-                    fontSize: `${currentSettings.fontSize}px`,
-                    lineHeight: '1.6'
-                  }}
-                  placeholder="Write your code here..."
+                  onChange={handleCodeChange}
+                  settings={currentSettings}
+                  language="typescript"
                 />
-
-                {/* Line numbers overlay */}
-                {currentSettings.lineNumbers && (
-                  <div
-                    className="absolute left-0 top-0 p-4 pointer-events-none select-none font-mono"
-                    style={{
-                      fontSize: `${currentSettings.fontSize}px`,
-                      lineHeight: '1.6',
-                      color: themeColors.textSecondary
-                    }}
-                  >
-                    {code.split('\n').map((_, i) => (
-                      <div key={i}>{i + 1}</div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           </Panel>

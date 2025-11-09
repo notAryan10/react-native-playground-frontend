@@ -22,8 +22,6 @@ export const MonacoPlayground: React.FC<MonacoPlaygroundProps> = ({
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
-
-    // Configure TypeScript compiler options for the Monaco editor
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ES2020,
       allowNonTsExtensions: true,
@@ -36,7 +34,6 @@ export const MonacoPlayground: React.FC<MonacoPlaygroundProps> = ({
       typeRoots: ['node_modules/@types'],
     });
 
-    // Configure JSX/TSX compiler options
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ES2020,
       allowNonTsExtensions: true,

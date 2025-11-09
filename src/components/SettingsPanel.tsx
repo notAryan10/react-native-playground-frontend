@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-
-// Type definitions
 interface Settings {
   fontSize: number;
   theme: 'light' | 'dark';
@@ -25,7 +23,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   initialSettings = {},
   onSave
 }) => {
-  // Initialize settings with defaults or provided values
   const [fontSize, setFontSize] = useState<number>(initialSettings.fontSize || 14);
   const [theme, setTheme] = useState<'light' | 'dark'>(initialSettings.theme || 'dark');
   const [lineNumbers, setLineNumbers] = useState<boolean>(initialSettings.lineNumbers !== undefined ? initialSettings.lineNumbers : true);
@@ -57,7 +54,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   };
 
   const handleCancel = () => {
-    // Reset to initial settings
     setFontSize(initialSettings.fontSize || 14);
     setTheme(initialSettings.theme || 'dark');
     setLineNumbers(initialSettings.lineNumbers !== undefined ? initialSettings.lineNumbers : true);
@@ -75,7 +71,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#252526] rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden border border-[#3e3e42]">
-        {/* Settings Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#3e3e42]">
           <h2 className="text-lg font-semibold text-white">Configuration</h2>
           <button
@@ -87,10 +82,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </svg>
           </button>
         </div>
-
-        {/* Settings Content */}
         <div className="p-6 space-y-8 overflow-auto max-h-[calc(80vh-140px)]">
-          {/* Font Size Setting */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-3">
               Editor Font Size
@@ -110,14 +102,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
               </svg>
             </div>
           </div>
-
-          {/* Theme Setting */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-3">
               Theme
             </label>
             <div className="grid grid-cols-2 gap-4">
-              {/* Light Theme */}
               <button
                 onClick={() => setTheme('light')}
                 className={`relative rounded-lg overflow-hidden border-2 transition-all ${theme === 'light'
@@ -147,8 +136,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   </div>
                 )}
               </button>
-
-              {/* Dark Theme */}
               <button
                 onClick={() => setTheme('dark')}
                 className={`relative rounded-lg overflow-hidden border-2 transition-all ${theme === 'dark'
@@ -180,8 +167,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
               </button>
             </div>
           </div>
-
-          {/* Editor Options */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-300">Editor Options</h3>
 
@@ -241,8 +226,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
               </div>
             </label>
           </div>
-
-          {/* Preview Options */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-300">Preview Options</h3>
 
@@ -275,8 +258,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </label>
           </div>
         </div>
-
-        {/* Settings Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#3e3e42] bg-[#1e1e1e]">
           <button
             onClick={handleCancel}
@@ -295,8 +276,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     </div>
   );
 };
-
-// Demo component showing how to use the SettingsPanel
 export default function SettingsPanelDemo() {
   const [showSettings, setShowSettings] = useState(false);
   const [currentSettings, setCurrentSettings] = useState<Settings>({
@@ -379,7 +358,5 @@ export default function SettingsPanelDemo() {
     </div>
   );
 }
-
-// Export the SettingsPanel component and Settings type for use in other files
 export { SettingsPanel };
 export type { Settings, SettingsPanelProps };

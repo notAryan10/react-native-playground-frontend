@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { SettingsPanel, Settings } from './SettingsPanel';
 const MonacoPlayground = dynamic(() => import('./MonacoPlayground'), { ssr: false });
+const StreamViewer = dynamic(() => import('./StreamViewer'), { ssr: false });
 import { ArrowLeft, Clock, Download, Settings as SettingsIcon, HelpCircle, FileText } from 'lucide-react';
 
 export default function PlaygroundLayout() {
@@ -56,42 +57,33 @@ const styles = StyleSheet.create({
 });
 `);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-
-  // Auto-save functionality
   useEffect(() => {
     if (currentSettings.autoSave && code) {
       const timer = setTimeout(() => {
-        // Save code to localStorage or API
         localStorage.setItem('playground-code', code);
         setLastSaved(new Date());
         console.log('Auto-saved at:', new Date().toLocaleTimeString());
-      }, 2000); // Save after 2 seconds of inactivity
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
   }, [code, currentSettings.autoSave]);
 
-  // Load saved code on mount
   useEffect(() => {
     const savedCode = localStorage.getItem('playground-code');
     if (savedCode) {
       setCode(savedCode);
     }
   }, []);
-
-  // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentSettings.theme);
   }, [currentSettings.theme]);
 
   const handleSaveSettings = (newSettings: Settings) => {
     setCurrentSettings(newSettings);
-    // Persist settings to localStorage
     localStorage.setItem('playground-settings', JSON.stringify(newSettings));
     console.log('Settings updated:', newSettings);
   };
-
-  // Load settings on mount
   useEffect(() => {
     const savedSettings = localStorage.getItem('playground-settings');
     if (savedSettings) {
@@ -101,15 +93,10 @@ const styles = StyleSheet.create({
 
   const handleCodeChange = (newCode: string) => {
     setCode(newCode);
-
-    // Format on save if enabled
     if (currentSettings.formatOnSave) {
-      // You can integrate a formatter like prettier here
       console.log('Formatting code...');
     }
   };
-
-  // Theme-based colors
   const themeColors = currentSettings.theme === 'dark'
     ? {
       bg: '#1e1e1e',
@@ -136,7 +123,6 @@ const styles = StyleSheet.create({
         color: themeColors.text
       }}
     >
-      {/* Top Navbar */}
       <div
         className="h-14 flex items-center justify-between px-4"
         style={{
@@ -170,8 +156,6 @@ const styles = StyleSheet.create({
             <span className="text-yellow-500">⚡</span>
             <span className="font-semibold">15,703</span>
           </div>
-
-          {/* Auto-save indicator */}
           {currentSettings.autoSave && lastSaved && (
             <div className="text-xs" style={{ color: themeColors.textSecondary }}>
               Saved {lastSaved.toLocaleTimeString()}
@@ -195,10 +179,7 @@ const styles = StyleSheet.create({
           </button>
         </div>
       </div>
-
-      {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
         <div
           className="w-12 flex flex-col items-center py-3 gap-3"
           style={{
@@ -227,10 +208,7 @@ const styles = StyleSheet.create({
             <SettingsIcon className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Resizable Panels */}
         <PanelGroup direction="horizontal" className="flex-1">
-          {/* Left Panel - Question */}
           <Panel defaultSize={25} minSize={15} maxSize={40}>
             <div
               className="h-full p-6 overflow-auto"
@@ -242,20 +220,15 @@ const styles = StyleSheet.create({
               </p>
             </div>
           </Panel>
-
-          {/* Resize Handle */}
           <PanelResizeHandle
             className="w-1 hover:bg-blue-500 transition-colors cursor-col-resize"
             style={{ backgroundColor: themeColors.border }}
           />
-
-          {/* Middle Panel - Editor */}
           <Panel defaultSize={45} minSize={30}>
             <div
               className="h-full flex flex-col"
               style={{ backgroundColor: themeColors.bg }}
             >
-              {/* Editor Header */}
               <div
                 className="px-4 py-2 flex items-center justify-between text-sm"
                 style={{
@@ -278,8 +251,6 @@ const styles = StyleSheet.create({
                   )}
                 </div>
               </div>
-
-              {/* Editor Content (Monaco) */}
               <div className="flex-1 overflow-hidden">
                 <MonacoPlayground
                   value={code}
@@ -290,20 +261,15 @@ const styles = StyleSheet.create({
               </div>
             </div>
           </Panel>
-
-          {/* Resize Handle */}
           <PanelResizeHandle
             className="w-1 hover:bg-blue-500 transition-colors cursor-col-resize"
             style={{ backgroundColor: themeColors.border }}
           />
-
-          {/* Right Panel - Preview */}
           <Panel defaultSize={30} minSize={20} maxSize={50}>
             <div
               className="h-full flex flex-col"
               style={{ backgroundColor: themeColors.bgSecondary }}
             >
-              {/* Preview Header */}
               <div
                 className="px-4 py-2 flex items-center justify-between text-sm"
                 style={{
@@ -322,38 +288,16 @@ const styles = StyleSheet.create({
                   )}
                 </div>
               </div>
-
-              {/* Preview Content */}
-              <div className="flex-1 p-4 overflow-auto">
-                <div
-                  className="text-sm"
-                  style={{ color: themeColors.textSecondary }}
-                >
-                  Preview output will appear here...
-                </div>
-
-                {/* Console Errors */}
-                {currentSettings.showConsoleErrors && (
-                  <div
-                    className="mt-4 p-3 rounded text-sm"
-                    style={{
-                      backgroundColor: themeColors.bg,
-                      borderLeft: '3px solid #ef4444'
-                    }}
-                  >
-                    <div className="font-semibold text-red-500 mb-1">Console</div>
-                    <div style={{ color: themeColors.textSecondary }}>
-                      No errors
-                    </div>
-                  </div>
-                )}
+              <div className="flex-1 overflow-hidden">
+                <StreamViewer 
+                  serverUrl="http://10.254.201.114:3000"
+                  theme={currentSettings.theme}
+                />
               </div>
             </div>
           </Panel>
         </PanelGroup>
       </div>
-
-      {/* Settings Modal */}
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}

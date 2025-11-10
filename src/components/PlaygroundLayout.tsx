@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { SettingsPanel, Settings } from './SettingsPanel';
 const MonacoPlayground = dynamic(() => import('./MonacoPlayground'), { ssr: false });
 import { ArrowLeft, Clock, Download, Settings as SettingsIcon, HelpCircle, FileText } from 'lucide-react';
+import ConsolePanel, { LogEntry, LogLevel } from './ConsolePanel';
 
 export default function PlaygroundLayout() {
   const [showSettings, setShowSettings] = useState(false);
@@ -56,6 +57,15 @@ const styles = StyleSheet.create({
 });
 `);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [builderLogs, setBuilderLogs] = useState<LogEntry[]>([]);
+
+  const pushLog = (level: LogLevel, message: string) => {
+    setLogs(prev => [...prev, { level, message, timestamp: new Date() }]);
+  };
+  const pushBuilderLog = (level: LogLevel, message: string) => {
+    setBuilderLogs(prev => [...prev, { level, message, timestamp: new Date() }]);
+  };
 
   // Auto-save functionality
   useEffect(() => {
@@ -65,11 +75,39 @@ const styles = StyleSheet.create({
         localStorage.setItem('playground-code', code);
         setLastSaved(new Date());
         console.log('Auto-saved at:', new Date().toLocaleTimeString());
+        pushBuilderLog('info', `Auto-saved at: ${new Date().toLocaleTimeString()}`);
       }, 2000); // Save after 2 seconds of inactivity
 
       return () => clearTimeout(timer);
     }
   }, [code, currentSettings.autoSave]);
+
+  // Capture console.* and forward to panel
+  useEffect(() => {
+    const original = {
+      log: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error,
+    } as const;
+
+    const fmt = (args: any[]) => args.map(a => {
+      if (typeof a === 'string') return a;
+      try { return JSON.stringify(a); } catch { return String(a); }
+    }).join(' ');
+
+    console.log = (...args: any[]) => { original.log(...args); pushLog('log', fmt(args)); };
+    console.info = (...args: any[]) => { original.info(...args); pushLog('info', fmt(args)); };
+    console.warn = (...args: any[]) => { original.warn(...args); pushLog('warn', fmt(args)); };
+    console.error = (...args: any[]) => { original.error(...args); pushLog('error', fmt(args)); };
+
+    return () => {
+      console.log = original.log;
+      console.info = original.info;
+      console.warn = original.warn;
+      console.error = original.error;
+    };
+  }, []);
 
   // Load saved code on mount
   useEffect(() => {
@@ -89,6 +127,7 @@ const styles = StyleSheet.create({
     // Persist settings to localStorage
     localStorage.setItem('playground-settings', JSON.stringify(newSettings));
     console.log('Settings updated:', newSettings);
+    pushBuilderLog('info', 'Settings updated');
   };
 
   // Load settings on mount
@@ -348,6 +387,12 @@ const styles = StyleSheet.create({
                   </div>
                 )}
               </div>
+              <ConsolePanel
+                logs={logs}
+                builderLogs={builderLogs}
+                onClearLogs={() => setLogs([])}
+                onClearBuilderLogs={() => setBuilderLogs([])}
+              />
             </div>
           </Panel>
         </PanelGroup>
